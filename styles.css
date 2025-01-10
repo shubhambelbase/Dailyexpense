@@ -14,4 +14,23 @@ h1 {
 
 form .form-group {
   margin-bottom: 15px;
+}/* Add fade-out animation for row deletion */
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
+#expense-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+#expense-table th, #expense-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+#expense-table th {
+    background-color: #f2f2f2;
 }
