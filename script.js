@@ -1,3 +1,4 @@
+<script>
 document.addEventListener('DOMContentLoaded', function() {
   // Load existing data from LocalStorage
   loadExpenses();
@@ -7,13 +8,14 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault(); // Prevent the form from refreshing the page
 
     const dateBs = document.getElementById('date').value.trim();
-    const material = document.getElementById('material').value.trim();
+    const title = document.getElementById('title').value.trim();
     const quantity = parseFloat(document.getElementById('quantity').value.trim());
     const price = parseFloat(document.getElementById('price').value.trim());
+    const paid = document.getElementById('paid').checked;
 
-    if (dateBs && material && !isNaN(quantity) && !isNaN(price)) {
+    if (dateBs && title && !isNaN(quantity) && !isNaN(price)) {
       const total = quantity * price;
-      const expense = { dateBs, material, quantity, price, total };
+      const expense = { id: Date.now(), dateBs, title, quantity, price, total, paid };
 
       saveExpense(expense);
       addExpenseToTable(expense);
@@ -39,51 +41,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Add an expense to the table
   function addExpenseToTable(expense) {
-    const table = document.getElementById('expense-table');
+    const table = document.getElementById('expense-table').getElementsByTagName('tbody')[0];
     const newRow = table.insertRow();
 
-    // Add a unique data-id attribute to each row
-    const uniqueId = Date.now(); // Use timestamp as a unique identifier
-    newRow.setAttribute('data-id', uniqueId);
+    newRow.setAttribute('data-id', expense.id);
 
     newRow.innerHTML = `
             <td>${expense.dateBs}</td>
-            <td>${expense.material}</td>
+            <td>${expense.title}</td>
             <td>${expense.quantity}</td>
             <td>${expense.price.toFixed(2)}</td>
             <td>${expense.total.toFixed(2)}</td>
-            <td><button class="btn btn-danger btn-sm delete-btn">Delete</button></td>
+            <td class="paid-status">${expense.paid ? 'Yes' : 'No'}
+                <div class="action-btns mt-2" style="display: none;">
+                    <button class="btn btn-success btn-sm mark-paid-btn">Mark as Paid</button>
+                    <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                </div>
+            </td>
         `;
 
-    // Add event listener to the delete button inside the row
-    const deleteButton = newRow.querySelector('.delete-btn');
-    deleteButton.addEventListener('click', function() {
-      // Show confirmation dialog
-      const confirmation = confirm('Are you sure you want to delete this entry?');
-      if (confirmation) {
-        try {
-          // Safely delete from LocalStorage and table using unique data-id
-          const row = deleteButton.closest('tr'); // Find the closest row to the button
-          const uniqueId = row.getAttribute('data-id'); // Get the unique ID of that row
-          deleteExpense(uniqueId); // Delete from LocalStorage using uniqueId
-
-          // Add fade-out animation before removing the row
-          row.classList.add('fade-out');
-          setTimeout(function() {
-            row.remove(); // Remove the row from the table after animation
-          }, 500); // Delay for the fade-out effect (500ms)
-        } catch (error) {
-          console.error("Error deleting the row:", error);
+    // Add click event listener to toggle buttons visibility
+    newRow.addEventListener('click', function() {
+        const actionBtns = newRow.querySelector('.action-btns');
+        if (actionBtns.style.display === 'none') {
+            actionBtns.style.display = 'flex';
+        } else {
+            actionBtns.style.display = 'none';
         }
-      }
+    });
+
+    // Add event listener to mark as paid button
+    newRow.querySelector('.mark-paid-btn').addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent triggering row click event
+        const paidCell = newRow.querySelector('.paid-status');
+        paidCell.innerHTML = 'Yes';
+
+        // Update storage
+        updateExpenseStatus(expense.id, true);
+    });
+
+    // Add event listener to delete button
+    newRow.querySelector('.delete-btn').addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent triggering row click event
+        const row = this.closest('tr');
+        const uniqueId = row.getAttribute('data-id'); // Get the unique ID of that row
+
+        row.classList.add('fade-out');
+        setTimeout(() => {
+            row.remove(); // Remove the row from the table
+            deleteExpense(uniqueId); // Delete from LocalStorage using uniqueId
+        }, 500); // Fade out and remove
     });
   }
 
-  // Delete an expense from LocalStorage using unique ID
-  function deleteExpense(uniqueId) {
+  // Update expense status in LocalStorage
+  function updateExpenseStatus(id, paid) {
     let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
-    // Remove expense by matching the unique ID
-    expenses = expenses.filter(expense => expense.uniqueId !== uniqueId);
+    expenses = expenses.map(expense => {
+        if (expense.id == id) {
+            expense.paid = paid;
+        }
+        return expense;
+    });
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+  }
+
+  // Delete an expense from LocalStorage using unique ID
+  function deleteExpense(id) {
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    expenses = expenses.filter(expense => expense.id != id);
     localStorage.setItem('expenses', JSON.stringify(expenses));
   }
 
@@ -102,3 +128,4 @@ document.addEventListener('DOMContentLoaded', function() {
     html2pdf().from(element).set(options).save();
   });
 });
+</script>
