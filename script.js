@@ -31,12 +31,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
     expenses.push(expense);
     localStorage.setItem('expenses', JSON.stringify(expenses));
+    console.log('Saved expenses:', expenses);
   }
 
   // Load expenses from LocalStorage
   function loadExpenses() {
     let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
     expenses.forEach(expense => addExpenseToTable(expense));
+    console.log('Loaded expenses:', expenses);
   }
 
   // Add an expense to the table
@@ -104,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return expense;
     });
     localStorage.setItem('expenses', JSON.stringify(expenses));
+    console.log('Updated expenses:', expenses);
   }
 
   // Delete an expense from LocalStorage using unique ID
@@ -111,6 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
     expenses = expenses.filter(expense => expense.id != id);
     localStorage.setItem('expenses', JSON.stringify(expenses));
+    console.log('Deleted expense with ID:', id);
+    console.log('Remaining expenses:', expenses);
   }
 
   // Download as PDF using html2pdf.js
