@@ -53,15 +53,12 @@ document.addEventListener('DOMContentLoaded', function() {
         <td>${expense.total.toFixed(2)}</td>
         <td class="paid-status">${expense.paid ? 'Yes' : 'No'}</td>
         <td>
-            <div class="action-btns">
+            <div class="action-btns" style="display: none;">
                 <button class="btn btn-success btn-sm mark-paid-btn">Mark as Paid</button>
                 <button class="btn btn-danger btn-sm delete-btn">Delete</button>
             </div>
         </td>
     `;
-
-    // Hide action buttons initially
-    newRow.querySelector('.action-btns').style.display = 'none';
 
     // Add click event listener to toggle buttons visibility
     newRow.addEventListener('click', function() {
@@ -121,48 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
   }
 
-  // Show the modal to input the title
-  document.getElementById('download-pdf').addEventListener('click', function() {
-    $('#titleModal').modal('show');
-  });
-
-  // Generate the PDF with the input title
-  document.getElementById('generate-pdf').addEventListener('click', function() {
-    const title = document.getElementById('pdf-title').value.trim();
-    if (!title) {
-        alert('Please enter a title.');
-        return;
-    }
-
-    // Hide the modal
-    $('#titleModal').modal('hide');
-
-    // Temporarily hide the actions column
-    const actionCols = document.querySelectorAll('#expense-table th:nth-child(7), #expense-table td:nth-child(7)');
-    actionCols.forEach(col => col.style.display = 'none');
-
-    // Create a new div to hold the title and table
-    const element = document.createElement('div');
-    element.innerHTML = `
-        <h1 style="text-align: center; color: #007bff; margin-bottom: 20px;">${title}</h1>
-        <div>${document.getElementById('expense-table').outerHTML}</div>
-    `;
-
-    // Configure the PDF generation options
-    const options = {
-      filename: 'expenses-report.pdf',
-      html2canvas: { scale: 2 }, // Higher scale for better resolution
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    // Generate the PDF and download it
-    html2pdf().from(element).set(options).save().then(function() {
-      // Show the actions column again
-      actionCols.forEach(col => col.style.display = '');
-    });
-  });
-});
-document.addEventListener('DOMContentLoaded', function() {
   // Show the modal to input the title
   document.getElementById('download-pdf').addEventListener('click', function() {
     $('#titleModal').modal('show');
