@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Load existing data from LocalStorage
   loadExpenses();
+  updateTotals();
 
   // Handle form submission
   document.getElementById('expense-form').addEventListener('submit', function(e) {
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       saveExpense(expense);
       addExpenseToTable(expense);
+      updateTotals();
 
       document.getElementById('expense-form').reset();
     } else {
@@ -76,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = this.closest('tr');
         const uniqueId = row.getAttribute('data-id');
         markAsPaid(uniqueId);
+        updateTotals();
     });
 
     // Add event listener to delete button
@@ -84,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const row = this.closest('tr');
         const uniqueId = row.getAttribute('data-id');
         deleteExpense(uniqueId, row);
+        updateTotals();
     });
   }
 
@@ -116,6 +120,24 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         row.remove();
     }, 500);
+  }
+
+  // Update totals for paid and unpaid expenses
+  function updateTotals() {
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    let totalPaid = 0;
+    let totalUnpaid = 0;
+
+    expenses.forEach(expense => {
+      if (expense.paid) {
+        totalPaid += expense.total;
+      } else {
+        totalUnpaid += expense.total;
+      }
+    });
+
+    document.getElementById('total-paid').textContent = totalPaid.toFixed(2);
+    document.getElementById('total-unpaid').textContent = totalUnpaid.toFixed(2);
   }
 
   // Show the modal to input the title
