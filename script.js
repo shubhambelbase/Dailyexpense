@@ -137,6 +137,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide the modal
     $('#titleModal').modal('hide');
 
+    // Temporarily hide the actions column
+    const actionCols = document.querySelectorAll('#expense-table th:nth-child(7), #expense-table td:nth-child(7)');
+    actionCols.forEach(col => col.style.display = 'none');
+
     // Create a new div to hold the title and table
     const element = document.createElement('div');
     element.innerHTML = `
@@ -152,6 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Generate the PDF and download it
-    html2pdf().from(element).set(options).save();
+    html2pdf().from(element).set(options).save().then(function() {
+      // Show the actions column again
+      actionCols.forEach(col => col.style.display = '');
+    });
   });
 });
