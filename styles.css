@@ -123,3 +123,7 @@ tr.active .action-btns {
 #download-pdf:hover {
     background-color: #e0a800;
 }
+
+footer {
+    margin-top: 40px;
+}
