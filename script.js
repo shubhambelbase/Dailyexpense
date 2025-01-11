@@ -156,16 +156,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Hide the modal
     $('#titleModal').modal('hide');
 
-    // Temporarily hide the actions column
-    const actionCols = document.querySelectorAll('#expense-table th:nth-child(7), #expense-table td:nth-child(7)');
-    actionCols.forEach(col => col.style.display = 'none');
+    // Get all expenses
+    const expenses = document.querySelectorAll('#expense-table tbody tr');
+    const pages = [];
+    let currentPage = createPageTemplate(title);
 
-    // Create a new div to hold the title and table
+    expenses.forEach((expense, index) => {
+      if (index > 0 && index % 20 === 0) {
+        pages.push(currentPage);
+        currentPage = createPageTemplate(title);
+      }
+      currentPage.querySelector('tbody').appendChild(expense.cloneNode(true));
+    });
+
+    // Add the last page
+    pages.push(currentPage);
+
+    // Combine all pages into a single element
     const element = document.createElement('div');
-    element.innerHTML = `
-        <h1 style="text-align: center; color: #007bff; margin-bottom: 20px;">${title}</h1>
-        <div>${document.getElementById('expense-table').outerHTML}</div>
-    `;
+    pages.forEach(page => element.appendChild(page));
 
     // Configure the PDF generation options
     const options = {
@@ -177,7 +186,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Generate the PDF and download it
     html2pdf().from(element).set(options).save().then(function() {
       // Show the actions column again
+      const actionCols = document.querySelectorAll('#expense-table th:nth-child(7), #expense-table td:nth-child(7)');
       actionCols.forEach(col => col.style.display = '');
     });
   });
+
+  // Create a page template for the PDF
+  function createPageTemplate(title) {
+    const page = document.createElement('div');
+    page.innerHTML = `
+        <h1 style="text-align: center; color: #007bff; margin-bottom: 20px;">${title}</h1>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Date (BS)</th>
+                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Title</th>
+                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Quantity</th>
+                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Price</th>
+                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Total</th>
+                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    `;
+    return page;
+  }
 });
