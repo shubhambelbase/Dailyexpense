@@ -161,58 +161,11 @@ document.addEventListener('DOMContentLoaded', function() {
     actionCols.forEach(col => col.style.display = 'none');
 
     // Create a new div to hold the title and table
-    const pages = [];
-    const expenses = document.querySelectorAll('#expense-table tbody tr');
-    let currentPage = document.createElement('div');
-    currentPage.innerHTML = `
-        <h1 style="text-align: center; color: #007bff; margin-bottom: 20px;">${title}</h1>
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Date (BS)</th>
-                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Title</th>
-                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Quantity</th>
-                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Price</th>
-                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Total</th>
-                    <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Paid</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    `;
-    const tbody = currentPage.querySelector('tbody');
-
-    expenses.forEach((expense, index) => {
-      if (index > 0 && index % 20 === 0) {
-        pages.push(currentPage);
-        currentPage = document.createElement('div');
-        currentPage.innerHTML = `
-            <h1 style="text-align: center; color: #007bff; margin-bottom: 20px;">${title}</h1>
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Date (BS)</th>
-                        <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Title</th>
-                        <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Quantity</th>
-                        <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Price</th>
-                        <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Total</th>
-                        <th style="border: 1px solid #dddddd; text-align: center; padding: 8px;">Paid</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        `;
-      }
-      currentPage.querySelector('tbody').appendChild(expense.cloneNode(true));
-    });
-    pages.push(currentPage);
-
     const element = document.createElement('div');
-    pages.forEach(page => {
-      element.appendChild(page);
-    });
+    element.innerHTML = `
+        <h1 style="text-align: center; color: #007bff; margin-bottom: 20px;">${title}</h1>
+        <div>${document.getElementById('expense-table').outerHTML}</div>
+    `;
 
     // Configure the PDF generation options
     const options = {
