@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('expense-form').addEventListener('submit', function(e) {
     e.preventDefault(); // Prevent the form from refreshing the page
 
+    const id = document.getElementById('expense-id').value;
     const dateBs = document.getElementById('date').value.trim();
     const title = document.getElementById('title').value.trim();
     const quantity = parseFloat(document.getElementById('quantity').value.trim());
@@ -15,13 +16,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (dateBs && title && !isNaN(quantity) && !isNaN(price)) {
       const total = quantity * price;
-      const expense = { id: Date.now(), dateBs, title, quantity, price, total, paid };
+      const expense = { id: id ? parseInt(id) : Date.now(), dateBs, title, quantity, price, total, paid };
 
-      saveExpense(expense);
-      addExpenseToTable(expense);
+      if (id) {
+        updateExpense(expense);
+      } else {
+        saveExpense(expense);
+        addExpenseToTable(expense);
+      }
+
       updateTotals();
-
       document.getElementById('expense-form').reset();
+      document.getElementById('expense-id').value = '';
+      document.querySelector('button[type="submit"]').textContent = 'Add Expense';
     } else {
       alert('Please fill all fields correctly.');
     }
@@ -57,6 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <td>
             <div class="action-btns" style="display: none;">
                 <button class="btn btn-success btn-sm mark-paid-btn">Mark as Paid</button>
+                <button class="btn btn-warning btn-sm edit-btn">Edit</button>
                 <button class="btn btn-danger btn-sm delete-btn">Delete</button>
             </div>
         </td>
@@ -79,6 +87,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const uniqueId = row.getAttribute('data-id');
         markAsPaid(uniqueId);
         updateTotals();
+    });
+
+    // Add event listener to edit button
+    newRow.querySelector('.edit-btn').addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent triggering row click event
+        const row = this.closest('tr');
+        const uniqueId = row.getAttribute('data-id');
+        editExpense(uniqueId);
     });
 
     // Add event listener to delete button
@@ -106,6 +122,73 @@ document.addEventListener('DOMContentLoaded', function() {
     const row = document.querySelector(`tr[data-id='${id}']`);
     if (row) {
         row.querySelector('.paid-status').textContent = 'Yes';
+    }
+  }
+
+  // Edit an expense
+  function editExpense(id) {
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    const expense = expenses.find(expense => expense.id == id);
+
+    if (expense) {
+        document.getElementById('expense-id').value = expense.id;
+        document.getElementById('date').value = expense.dateBs;
+        document.getElementById('title').value = expense.title;
+        document.getElementById('quantity').value = expense.quantity;
+        document.getElementById('price').value = expense.price;
+        document.getElementById('paid').checked = expense.paid;
+        document.querySelector('button[type="submit"]').textContent = 'Update Expense';
+    }
+  }
+
+  // Update an expense in LocalStorage and the table
+  function updateExpense(updatedExpense) {
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    expenses = expenses.map(expense => expense.id == updatedExpense.id ? updatedExpense : expense);
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+
+    // Update the table row
+    const row = document.querySelector(`tr[data-id='${updatedExpense.id}']`);
+    if (row) {
+        row.innerHTML = `
+            <td>${updatedExpense.dateBs}</td>
+            <td>${updatedExpense.title}</td>
+            <td>${updatedExpense.quantity}</td>
+            <td>${updatedExpense.price.toFixed(2)}</td>
+            <td>${updatedExpense.total.toFixed(2)}</td>
+            <td class="paid-status">${updatedExpense.paid ? 'Yes' : 'No'}</td>
+            <td>
+                <div class="action-btns" style="display: none;">
+                    <button class="btn btn-success btn-sm mark-paid-btn">Mark as Paid</button>
+                    <button class="btn btn-warning btn-sm edit-btn">Edit</button>
+                    <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                </div>
+            </td>
+        `;
+
+        // Re-add event listeners
+        row.querySelector('.mark-paid-btn').addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering row click event
+            const row = this.closest('tr');
+            const uniqueId = row.getAttribute('data-id');
+            markAsPaid(uniqueId);
+            updateTotals();
+        });
+
+        row.querySelector('.edit-btn').addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering row click event
+            const row = this.closest('tr');
+            const uniqueId = row.getAttribute('data-id');
+            editExpense(uniqueId);
+        });
+
+        row.querySelector('.delete-btn').addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering row click event
+            const row = this.closest('tr');
+            const uniqueId = row.getAttribute('data-id');
+            deleteExpense(uniqueId, row);
+            updateTotals();
+        });
     }
   }
 
