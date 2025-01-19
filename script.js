@@ -6,6 +6,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Handle form submission
   document.getElementById('expense-form').addEventListener('submit', function(e) {
     e.preventDefault(); // Prevent the form from refreshing the page
+    
+    const form = document.getElementById('expense-form');
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
 
     const id = document.getElementById('expense-id').value;
     const dateBs = document.getElementById('date').value.trim();
@@ -26,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       updateTotals();
-      document.getElementById('expense-form').reset();
+      form.reset();
       document.getElementById('expense-id').value = '';
       document.querySelector('button[type="submit"]').textContent = 'Add Expense';
     } else {
@@ -263,4 +269,38 @@ document.addEventListener('DOMContentLoaded', function() {
       actionCols.forEach(col => col.style.display = '');
     });
   });
+
+  // Add sorting functionality
+  document.querySelectorAll('#expense-table th').forEach(headerCell => {
+    headerCell.addEventListener('click', () => {
+      const tableElement = headerCell.parentElement.parentElement.parentElement;
+      const headerIndex = Array.prototype.indexOf.call(headerCell.parentElement.children, headerCell);
+      const currentIsAscending = headerCell.classList.contains('th-sort-asc');
+
+      sortTableByColumn(tableElement, headerIndex, !currentIsAscending);
+    });
+  });
+
+  function sortTableByColumn(table, column, asc = true) {
+    const dirModifier = asc ? 1 : -1;
+    const tBody = table.tBodies[0];
+    const rows = Array.from(tBody.querySelectorAll('tr'));
+
+    const sortedRows = rows.sort((a, b) => {
+      const aColText = a.querySelector(`td:nth-child(${column + 1})`).textContent.trim();
+      const bColText = b.querySelector(`td:nth-child(${column + 1})`).textContent.trim();
+
+      return aColText > bColText ? (1 * dirModifier) : (-1 * dirModifier);
+    });
+
+    while (tBody.firstChild) {
+      tBody.removeChild(tBody.firstChild);
+    }
+
+    tBody.append(...sortedRows);
+
+    table.querySelectorAll('th').forEach(th => th.classList.remove('th-sort-asc', 'th-sort-desc'));
+    headerCell.classList.toggle('th-sort-asc', asc);
+    headerCell.classList.toggle('th-sort-desc', !asc);
+  }
 });
